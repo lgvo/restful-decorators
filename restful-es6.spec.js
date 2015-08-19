@@ -1,6 +1,6 @@
 import chai from 'chai';
 
-import {get, post, put, del, endPoint, endPointsOf, configOf} from './restful';
+import {get, post, put, del, path, endPoint, endPointsOf, configOf, processEndPoints} from './restful';
 
 const expect = chai.expect;
 
@@ -64,6 +64,21 @@ describe('EndPoints', function() {
         expect(endpoints).exist;
         expect(endpoints.methodPut);
         expect(endpoints.methodPut.httpMethod).to.equal('DELETE');
+
+    });
+
+    it('should define a endpoint with path method', function() {
+        class Test {
+            @path('/test')
+            methodPut(req, res) {
+
+            }
+        }
+
+        var endpoints = endPointsOf(Test);
+        expect(endpoints).exist;
+        expect(endpoints.methodPut);
+        expect(endpoints.methodPut.httpMethod).to.equal('PATH');
 
     });
 
@@ -164,5 +179,48 @@ describe('Common Properties', function() {
 
         expect(configOf(Test).config.name).to.equal('REST');
         
+    });
+});
+
+describe('Process EndPoints', function() {
+    it('should iterate over all endpoints defined in some class', function() {
+        function name(name) {
+            return function(config) {
+                config.name = name;
+            };
+        }
+
+        @endPoint('/class', name('class'))
+        class EP {
+            @get('/get', name('method1'))
+            find() {
+
+            }
+
+            @post('/post', name('method2'))
+            create() {
+
+            }
+        }
+
+        var arr = [];
+
+        processEndPoints(EP, (httpMethod, fn, url, config, classUrl, classConfig) => {
+            arr.push({httpMethod, fn, url, config, classUrl, classConfig});
+        });
+
+        expect(arr[0].httpMethod).to.eql('GET');
+        expect(arr[0].fn).to.eql(EP.prototype.find);
+        expect(arr[0].url).to.eql('/get');
+        expect(arr[0].config.name).to.eql('method1');
+        expect(arr[0].classUrl).to.eql('/class');
+        expect(arr[0].classConfig.name).to.eql('class');
+
+        expect(arr[1].httpMethod).to.eql('POST');
+        expect(arr[1].fn).to.eql(EP.prototype.create);
+        expect(arr[1].url).to.eql('/post');
+        expect(arr[1].config.name).to.eql('method2');
+        expect(arr[1].classUrl).to.eql('/class');
+        expect(arr[1].classConfig.name).to.eql('class');
     });
 });

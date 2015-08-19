@@ -1,4 +1,4 @@
-// one line to give the program's name and a brief description
+// restful-decorators - a simple way to define RESTful Metadata in Javascript
 // Copyright © 2015 Luis Gustavo Vilela de Oliveira
 // 
 // Permission is hereby granted, free of charge, to any person obtaining
@@ -123,3 +123,9 @@ export function del() {
     var params = processArgs(arguments);
     return request('DELETE', params.url, params.config);
 }
+
+export function path() {
+    var params = processArgs(arguments);
+    return request('PATH', params.url, params.config);
+}
+
